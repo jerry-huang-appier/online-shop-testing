@@ -1,0 +1,10 @@
+[project]
+name = "online-shop-testing"
+version = "0.1.0"
+description = "Static demo shop + a tiny backend that reads BotBonnie info via the ets-agent MCP server"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.27,<2",  # same major as ets-agent-mcp; 2.x changed the client transport API
+    "starlette",
+    "uvicorn",
+]

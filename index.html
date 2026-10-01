@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f3ed">
   <title>日常選物所 | 把喜歡帶回家</title>
+  <!-- AIQUA (Appier) Web SDK -->
+  <script type="text/javascript">
+    !function(q,g,r,a,p,h,js) {
+      q.appier=q.qg;
+      if(q.qg)return;
+      js=q.appier=q.qg=function() {
+        js.callmethod ? js.callmethod.call(js, arguments) : js.queue.push(arguments);
+      };
+      js.queue=[];
+      p=g.createElement(r);p.async=!0;p.src=a;h=g.getElementsByTagName(r)[0];
+      h.parentNode.insertBefore(p,h);
+    } (window,document,'script','https://cdn-prd-gcp-jp0.aiqua.io/qgraph.6b4ce1e5264939e30dc6.js');
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -111,6 +124,21 @@
     .success-mark { display: grid; width: 48px; height: 48px; margin: 0 auto 15px; place-items: center; border-radius: 50%; background: #e8edcf; color: var(--green); font-size: 22px; }
     .success h2 { margin: 0 0 10px; font-family: var(--serif); font-size: 28px; font-weight: 500; }
     .success p { margin: 0 0 22px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .bb { max-width: 1320px; margin: 0 auto; padding: 0 5vw 90px; }
+    .bb-panel { padding: 28px; border: 1px solid var(--line); background: var(--white); }
+    .bb-form { display: flex; gap: 10px; margin: 16px 0 6px; }
+    .bb-form input { flex: 1; min-width: 0; padding: 11px; border: 1px solid var(--line); background: white; outline: none; font-size: 13px; }
+    .bb-form input:focus { border-color: var(--green); }
+    .bb-form button { padding: 11px 18px; border: 0; background: var(--green); color: white; font-size: 12px; }
+    .bb-form button:disabled { background: #a9aa9e; cursor: wait; }
+    .bb-status { margin: 0 0 14px; color: var(--muted); font-size: 11px; }
+    .bb-status.error { color: #a23b2a; }
+    .bb-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .bb-table th, .bb-table td { padding: 9px 8px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .bb-table th { width: 30%; color: var(--muted); font-weight: 500; word-break: break-all; }
+    .bb-table td { word-break: break-word; }
+    .bb-table pre { max-height: 220px; margin: 0; overflow: auto; font-size: 11px; white-space: pre-wrap; }
+    @media (max-width: 560px) { .bb { padding: 0 18px 60px; } .bb-panel { padding: 20px 16px; } .bb-form { flex-direction: column; } }
     @media (hover: none) { .add-button { opacity: 1; transform: none; } }
     @media (max-width: 800px) {
       .nav { display: none; }
@@ -148,7 +176,7 @@
   <div class="announcement">春日慢慢選，滿 $1,500 免運｜全館商品享 7 日鑑賞期</div>
   <header class="header">
     <a class="brand" href="#top" aria-label="日常選物所首頁">日常<span>・</span>選物所</a>
-    <nav class="nav" aria-label="主要導覽"><a href="#products">所有商品</a><a href="#products" data-nav-category="居家">居家生活</a><a href="#products" data-nav-category="器物">器物餐桌</a></nav>
+    <nav class="nav" aria-label="主要導覽"><a href="#products">所有商品</a><a href="#products" data-nav-category="居家">居家生活</a><a href="#products" data-nav-category="器物">器物餐桌</a><a href="#botbonnie">BotBonnie</a></nav>
     <div class="header-actions">
       <label class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="search" type="search" placeholder="找一件喜歡的…" aria-label="搜尋商品"></label>
       <button class="cart-button" id="open-cart" type="button" aria-label="開啟購物車">購物袋 <span class="cart-count" id="cart-count">0</span></button>
@@ -174,6 +202,15 @@
         <select class="sort" id="sort" aria-label="商品排序"><option value="featured">推薦排序</option><option value="price-asc">價格由低到高</option><option value="price-desc">價格由高到低</option></select>
       </div>
       <div class="products" id="products-grid" aria-live="polite"></div>
+    </section>
+    <section class="bb" id="botbonnie">
+      <div class="section-head"><div><p class="eyebrow">CHATBOT ACCOUNT</p><h2>BotBonnie 帳號資訊</h2></div></div>
+      <div class="bb-panel">
+        <p class="bb-status" id="bb-health">檢查 ets-agent 連線中…</p>
+        <form class="bb-form" id="bb-form"><input id="bb-bot-id" placeholder="輸入 Bot ID，例如 bot-DBiJhFTk5" aria-label="BotBonnie Bot ID" autocomplete="off" required><button id="bb-submit" type="submit">查詢</button></form>
+        <p class="bb-status" id="bb-status">Bot ID 可在 console.botbonnie.com 登入後的網址列找到（bot-xxxx）。</p>
+        <div id="bb-result"></div>
+      </div>
     </section>
   </main>
   <footer class="footer"><strong>日常・選物所</strong><span>把日子過成喜歡的樣子。<br>© 2026 日常選物所</span><span>本網站為靜態展示商店，訂單不會實際送出。</span></footer>
@@ -324,6 +361,47 @@
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") { setCartOpen(false); closeCheckout(); }
     });
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+    const bbStatus = (el, text, isError = false) => { el.textContent = text; el.classList.toggle("error", isError); };
+
+    async function checkBotBonnie() {
+      const el = document.querySelector("#bb-health");
+      try {
+        const res = await fetch("/api/botbonnie/health");
+        const data = await res.json();
+        bbStatus(el, data.ok ? `已連線 ets-agent（${data.connection} · AWS ${data.account_id}）` : `ets-agent 無法使用：${data.error}`, !data.ok);
+      } catch {
+        bbStatus(el, "找不到後端 API，請用 uv run python server.py 啟動，而不是直接開啟 index.html。", true);
+      }
+    }
+
+    document.querySelector("#bb-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const botId = document.querySelector("#bb-bot-id").value.trim();
+      const button = document.querySelector("#bb-submit");
+      const status = document.querySelector("#bb-status");
+      const result = document.querySelector("#bb-result");
+      button.disabled = true;
+      result.innerHTML = "";
+      bbStatus(status, `查詢 ${botId} 中…`);
+      try {
+        const res = await fetch(`/api/botbonnie/bots/${encodeURIComponent(botId)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        const versions = data.versions.length ? `｜版本：${data.versions.join(", ")}（顯示 PROD 優先）` : "";
+        bbStatus(status, `${data.bot_id}${versions}｜敏感欄位已遮蔽`);
+        const rows = Object.entries(data.item).sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => {
+          const cell = value !== null && typeof value === "object" ? `<pre>${escapeHtml(JSON.stringify(value, null, 2))}</pre>` : escapeHtml(value);
+          return `<tr><th>${escapeHtml(key)}</th><td>${cell}</td></tr>`;
+        }).join("");
+        result.innerHTML = `<table class="bb-table"><tbody>${rows}</tbody></table>`;
+      } catch (error) {
+        bbStatus(status, `查詢失敗：${error.message}`, true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+    checkBotBonnie();
   </script>
 </body>
 </html>
