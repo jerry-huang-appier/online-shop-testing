@@ -249,7 +249,7 @@
     const shippingFee = total => total >= 1500 ? 0 : 80;
 
     // AIQUA custom data. Names follow [a-z_][a-z0-9_]*; keep each param's type stable across logs.
-    const track = (name, params) => window.qg && window.qg("event", name, params);
+    const track = (name, params, valueToSum) => window.qg && window.qg("event", name, params, valueToSum);
     const productParams = product => ({ product_id: product.id, product_name: product.name, category: product.category, price: product.price });
     // AIQUA phoneNo: country code + digits only. Local TW numbers (09xx…) become 8869xx….
     const toPhoneNo = phone => { const digits = phone.replace(/\D/g, ""); return digits.startsWith("0") ? `886${digits.slice(1)}` : digits; };
@@ -370,7 +370,7 @@
       const subtotal = cartTotal();
       window.qg && window.qg("identify", { email: form.get("email").trim(), phoneNo: toPhoneNo(form.get("phone")), name: form.get("name").trim() });
       cart.forEach(item => track("product_purchased", { ...productParams(products.find(product => product.id === item.id)), quantity: item.quantity, order_id: orderId }));
-      track("checkout_completed", { order_id: orderId, subtotal, shipping_fee: shippingFee(subtotal), total: subtotal + shippingFee(subtotal), item_count: cart.reduce((sum, item) => sum + item.quantity, 0), payment_method: form.get("payment") });
+      track("checkout_completed", { order_id: orderId, subtotal, shipping_fee: shippingFee(subtotal), total: subtotal + shippingFee(subtotal), item_count: cart.reduce((sum, item) => sum + item.quantity, 0), payment_method: form.get("payment") }, subtotal + shippingFee(subtotal));
       cart = [];
       saveCart();
       document.querySelector("#modal-content").innerHTML = `<div class="success"><span class="success-mark">✓</span><h2>謝謝你的選擇</h2><p>示範訂單 <strong>${orderId}</strong> 已建立。<br>這是靜態網站，不會實際處理付款或配送。</p><button class="submit-order" id="finish-order" type="button">回到商店</button></div>`;
