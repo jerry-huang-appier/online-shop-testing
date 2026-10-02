@@ -323,7 +323,14 @@
       if (item) item.quantity += 1;
       else cart.push({ id, quantity: 1 });
       saveCart();
-      track("product_added_to_cart", { ...productParams(products.find(product => product.id === id)), quantity: 1 });
+      const added = products.find(product => product.id === id);
+      track("product_added_to_cart", { ...productParams(added), quantity: 1 });
+      // GTM: GA4 ecommerce format. Clear the previous ecommerce object first so items don't merge.
+      window.dataLayer.push({ ecommerce: null });
+      window.dataLayer.push({
+        event: "add_to_cart",
+        ecommerce: { currency: "TWD", value: added.price, items: [{ item_id: String(added.id), item_name: added.name, item_category: added.category, price: added.price, quantity: 1 }] }
+      });
       button.textContent = "已加入 ✓";
       window.setTimeout(() => { if (button.isConnected) button.textContent = "加入購物袋"; }, 1000);
     });
